@@ -37,7 +37,9 @@ npx @modern-js/create@latest myapp
 
 由于我需要使用联邦模块功能，所以直接创建 `main`和`child` 两个项目
 
-![目录结构](\images\1778143626751.png)
+<img src="\images\1778143626751.png" alt="运行成功" style="zoom: 80%;" />
+
+
 
 
 
@@ -401,7 +403,7 @@ export default createModuleFederationConfig({
 
 注意：这时候运行项目会报错
 
-![1778212045821](\images\1778212045821.png)
+<img src="\images\1778212045821.png" alt="运行成功" style="zoom: 80%;" />
 
 文档中没有说明，安装 `react-router-dom` 即可正常启动
 
