@@ -37,7 +37,7 @@ npx @modern-js/create@latest myapp
 
 由于我需要使用联邦模块功能，所以直接创建 `main`和`child` 两个项目
 
-![目录结构](C:\Users\admin\AppData\Roaming\Typora\typora-user-images\1778143626751.png)
+![目录结构](\images\1778143626751.png)
 
 
 
@@ -79,7 +79,7 @@ pnpm install
 pnpm run dev
 ~~~
 
-<img src="C:\Users\admin\AppData\Roaming\Typora\typora-user-images\1778143400799.png" alt="运行成功" style="zoom: 50%;" />
+<img src="\images\1778143400799.png" alt="运行成功" style="zoom: 50%;" />
 
 
 
@@ -292,4 +292,126 @@ export const provider = createBridgeComponent({
 
 export default provider;
 ~~~
+
+ 该文件会将入口的应用根组件传递给 Bridge API，并通过 Bridge 将调用渲染函数将其渲染到指定的节点上。 
+
+
+
+然后配置应用共享
+
+```ts
+// module-federation.config.ts
+import { createModuleFederationConfig } from '@module-federation/modern-js-v3';
+
+export default createModuleFederationConfig({
+  name: 'child',
+  shared: {
+    react: { singleton: true },
+    'react-dom': { singleton: true },
+  },
+  manifest: {
+    filePath: 'static',
+  },
+  filename: 'static/childEntry.js',
+  exposes: {
+    './ChildButton': './src/components/ChildButton.tsx',
+    './app': './src/exportApp.tsx',
+  },
+  // 消费主应用共享，如果没有消费，可以去掉
+  remotes: {
+    main: 'main@http://localhost:3000/static/mf-manifest.json',
+  },
+});
+```
+
+
+
+#### 消费者使用模块
+
+如果要 `/child` 下的所有路由都能进入应用级模块中，需要增加通配路由 `src/routes/remote/$.tsx`。 
+
+~~~tsx
+src/routes/child/$.tsx
+import { useLocation } from "@modern-js/runtime/router";
+import { createRemoteAppComponent } from "@module-federation/modern-js-v3/react";
+import { loadRemote } from "@module-federation/modern-js-v3/runtime";
+import { useEffect } from "react";
+
+const ErrorBoundary = (info?: { error: { message: string } }) => {
+  return (
+    <div>
+      <h2>This is ErrorBoundary Component, Something went wrong:</h2>
+      <pre style={{ color: "red" }}>{info?.error.message}</pre>
+    </div>
+  );
+};
+const Loading = <div>loading...</div>;
+const RemoteApp = createRemoteAppComponent({
+  loader: () => loadRemote("child/app"),
+  fallback: ErrorBoundary,
+  loading: Loading,
+});
+
+export default function RemoteAppRoute() {
+  const { pathname, search, hash } = useLocation();
+  const fullPath = `${pathname}${search}${hash}`;
+
+  // 保持远程路由与主机URL同步，不加会导致远程路由无法正常工作
+  useEffect(() => {
+    window.dispatchEvent(
+      new PopStateEvent("popstate", { state: window.history.state })
+    );
+  }, [fullPath]);
+
+  return <RemoteApp basename="/child" />;
+}
+~~~
+
+
+
+然后在 `module-federation.config.ts `配置应用连接
+
+~~~ts
+// module-federation.config.ts
+import { createModuleFederationConfig } from '@module-federation/modern-js-v3';
+
+export default createModuleFederationConfig({
+  name: 'main',
+  manifest: {
+    filePath: 'static',
+  },
+  filename: 'static/mainEntry.js',
+  exposes: {
+    './MainButton': './src/components/MainButton.tsx',
+  },
+  // 连接远程应用，需要先启动远程应用
+  remotes: {
+    child: `child@http://localhost:3001/static/mf-manifest.json`,
+  },
+  shared: {
+    react: { singleton: true },
+    'react-dom': { singleton: true },
+  },
+});
+~~~
+
+
+
+#### 启动应用
+
+注意：这时候运行项目会报错
+
+![1778212045821](\images\1778212045821.png)
+
+文档中没有说明，安装 `react-router-dom` 即可正常启动
+
+~~~cmd
+pnpm add react-router-dom
+~~~
+
+
+
+ 现在，生产者应用和消费者应用都已经搭建完毕，我们可以在本地运行 `pnpm dev` 启动两个应用。 
+
+ 消费者应用访问 `/child` 路由时，会进入生产者应用中。访问 `http://localhost:3000/child`，可以看到页面中已经包含了生产者的远程模块的完整页面。 
 

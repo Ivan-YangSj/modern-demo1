@@ -2,6 +2,7 @@ import { Helmet } from '@modern-js/runtime/head';
 import './index.css';
 import MainButton from '@/components/MainButton';
 // import ChildButton from 'child/ChildButton';
+// import { Suspense } from 'react';
 
 const Index = () => (
   <div className="container-box">

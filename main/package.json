@@ -11,10 +11,13 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.2.2",
     "@modern-js/runtime": "3.1.5",
     "@module-federation/modern-js-v3": "^2.4.0",
+    "antd": "^6.3.7",
     "react": "^19.2.3",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.15.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

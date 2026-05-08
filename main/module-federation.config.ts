@@ -11,9 +11,9 @@ export default createModuleFederationConfig({
     './MainButton': './src/components/MainButton.tsx',
   },
   // 连接远程应用，需要先启动远程应用
-  // remotes: {
-  //   child: `child@http://localhost:3001/static/mf-manifest.json`,
-  // },
+  remotes: {
+    child: `child@http://localhost:3001/static/mf-manifest.json`,
+  },
   shared: {
     react: { singleton: true },
     'react-dom': { singleton: true },
